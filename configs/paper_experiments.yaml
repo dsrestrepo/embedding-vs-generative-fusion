@@ -1,0 +1,241 @@
+paths:
+  data_dir: /gpfs/workdir/restrepoda/datasets
+  embeddings_dir: /gpfs/workdir/restrepoda/Embeddings_vlm
+  outputs_dir: outputs
+  samples_dir: data_samples
+
+# Datasets to download for the paper experiments
+# Other datasets are kept but disabled.
+download_datasets:
+  - name: fakeddit
+    enabled: true
+    args: ["--dataset", "fakeddit", "--fakeddit_subset", "0.2", "--fakeddit_download_mode", "url"]
+  - name: recipes5k
+    enabled: true
+    args: ["--dataset", "recipes5k"]
+  - name: mbrset
+    enabled: true
+    args: ["--dataset", "mbrset"]
+  # Optional datasets (disabled)
+  #- name: daquar
+  #  enabled: false
+  #  args: ["--dataset", "daquar"]
+  #- name: coco-qa
+  #  enabled: false
+  #  args: ["--dataset", "coco-qa"]
+  #- name: brset
+  #  enabled: false
+  #  args: ["--dataset", "brset"]
+  #- name: mimic
+  #  enabled: false
+  #  args: ["--dataset", "mimic"]
+  #- name: ham10000
+  #  enabled: false
+  #  args: ["--dataset", "ham10000"]
+  #- name: satellite
+  #  enabled: false
+  #  args: ["--dataset", "satellite"]
+
+# Embedding extraction configuration
+embeddings:
+  batch_size: 256
+  nproc_per_node: 2
+  datasets:
+    - name: Recipes5k
+      enabled: true
+      path: Recipes5k
+      image_col: image
+      text_col: ingredients
+      image_dir: images
+    - name: fakeddit
+      enabled: true
+      path: fakeddit
+      image_col: id
+      text_col: text
+      image_dir: images
+    - name: mbrset
+      enabled: true
+      path: mBRSET/mbrset
+      image_col: file
+      text_col: text
+      image_dir: images
+    # Optional datasets (disabled)
+    #- name: daquar
+    #  enabled: false
+    #  path: daquar
+    #  image_col: image_id
+    #  text_col: question
+    #  image_dir: images
+    #- name: coco-qa
+    #  enabled: false
+    #  path: coco-qa
+    #  image_col: image_id
+    #  text_col: questions
+    #  image_dir: images
+    #- name: brset
+    #  enabled: false
+    #  path: BRSET/brset
+    #  image_col: image_id
+    #  text_col: text
+    #  image_dir: images
+    #- name: ham10000
+    #  enabled: false
+    #  path: HAM10000
+    #  image_col: image_id
+    #  text_col: text
+    #  image_dir: images
+    #- name: mimic
+    #  enabled: false
+    #  path: MIMIC/mimic
+    #  image_col: path_preproc
+    #  text_col: text
+    #  image_dir: .
+  models:
+    - name: CLIP
+      enabled: true
+    - name: SigLip
+      enabled: true
+    - name: biomedclip
+      enabled: true
+    - name: MedSigLip
+      enabled: true
+
+# Embedding fusion training configuration
+framework_fusion:
+  output_dir: outputs/framework_fusion
+  methods: [linear, mlp_early, mlp_late]
+  datasets:
+    - name: Recipes5k
+      enabled: true
+      embeddings_subdir: Recipes5k
+      label_col: class
+      backbones: [clip, siglip]
+      multilabel: false
+    - name: fakeddit
+      enabled: true
+      embeddings_subdir: fakeddit
+      label_col: 2_way_label
+      backbones: [clip, siglip]
+      multilabel: false
+    - name: mbrset
+      enabled: true
+      embeddings_subdir: mbrset
+      label_col: DR_2
+      backbones: [biomedclip, medsiglip]
+      multilabel: false
+    # Optional datasets (disabled)
+    #- name: daquar
+    #  enabled: false
+    #  embeddings_subdir: daquar
+    #  label_col: answer
+    #  backbones: [clip, siglip]
+    #  multilabel: true
+    #- name: coco-qa
+    #  enabled: false
+    #  embeddings_subdir: coco-qa
+    #  label_col: answers
+    #  backbones: [clip, siglip]
+    #  multilabel: false
+    #- name: mimic
+    #  enabled: false
+    #  embeddings_subdir: mimic
+    #  label_col: [Atelectasis, Cardiomegaly, Consolidation, Edema, No Finding, Pleural Effusion]
+    #  backbones: [clip, siglip]
+    #  multilabel: true
+
+# Zero-shot Gemma evaluation configuration
+gemma_zero_shot:
+  output_dir: outputs/gemma_zero_shot
+  datasets:
+    - name: Recipes5k
+      enabled: true
+      model_name: google/gemma-3-27b-it
+      embeddings_subdir: Recipes5k
+      label_col: class
+      text_col: ingredients
+      image_col: image
+      backbone: clip
+    - name: Recipes5k
+      enabled: true
+      model_name: google/gemma-3-4b-it
+      embeddings_subdir: Recipes5k
+      label_col: class
+      text_col: ingredients
+      image_col: image
+      backbone: clip
+    - name: fakeddit
+      enabled: true
+      model_name: google/gemma-3-27b-it
+      embeddings_subdir: fakeddit
+      label_col: 2_way_label
+      text_col: text
+      image_col: id
+      backbone: clip
+    - name: fakeddit
+      enabled: true
+      model_name: google/gemma-3-4b-it
+      embeddings_subdir: fakeddit
+      label_col: 2_way_label
+      text_col: text
+      image_col: id
+      backbone: clip
+    - name: mbrset
+      enabled: true
+      model_name: google/medgemma-27b-it
+      embeddings_subdir: mbrset
+      label_col: DR_2
+      text_col: text
+      image_col: file
+      backbone: clip
+    - name: mbrset
+      enabled: true
+      model_name: google/medgemma-4b-it
+      embeddings_subdir: mbrset
+      label_col: DR_2
+      text_col: text
+      image_col: file
+      backbone: clip
+    - name: mbrset
+      enabled: true
+      model_name: google/gemma-3-27b-it
+      embeddings_subdir: mbrset
+      label_col: DR_2
+      text_col: text
+      image_col: file
+      backbone: clip
+    - name: mbrset
+      enabled: true
+      model_name: google/gemma-3-4b-it
+      embeddings_subdir: mbrset
+      label_col: DR_2
+      text_col: text
+      image_col: file
+      backbone: clip
+    # Optional datasets (disabled)
+    #- name: daquar
+    #  enabled: false
+    #  model_name: google/gemma-3-27b-it
+    #  embeddings_subdir: daquar
+    #  label_col: answer
+    #  text_col: question
+    #  image_col: image_id
+    #  backbone: clip
+    #  multilabel: true
+    #- name: coco-qa
+    #  enabled: false
+    #  model_name: google/gemma-3-27b-it
+    #  embeddings_subdir: coco-qa
+    #  label_col: answers
+    #  text_col: questions
+    #  image_col: image_id
+    #  backbone: clip
+    #  multilabel: false
+    #- name: mimic
+    #  enabled: false
+    #  model_name: google/medgemma-27b-it
+    #  embeddings_subdir: mimic
+    #  label_col: [Atelectasis, Cardiomegaly, Consolidation, Edema, No Finding, Pleural Effusion]
+    #  text_col: text
+    #  image_col: path_preproc
+    #  backbone: clip
+    #  multilabel: true
