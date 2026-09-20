@@ -20,7 +20,7 @@ This repository provides a comprehensive evaluation framework for multimodal dat
 
 This repository explores two dominant paradigms for utilizing foundation models in multimodal AI:
 
-1. **Lightweight Embedding Fusion:** Extracts embeddings using pretrained foundation models, leveraging representations that act as a common format to unify different data modalities (e.g., CLIP, SigLIP, BiomedCLIP, MedSigLIP). These representations are combined via shallow neural networks (Linear Probes, Early/Late Fusion), significantly reducing computational demands and facilitating data integration in complex domains.
+1. **Lightweight Embedding Fusion:** Extracts embeddings using pretrained foundation models, leveraging representations that act as a common format to unify different data modalities (e.g., CLIP, SigLIP, BiomedCLIP, MedSigLIP). These representations are combined through modality-specific probes and shallow fusion heads (linear, early/late MLP, gated attention, MCR late fusion, and I²MoE), reducing the cost of downstream multimodal learning.
 
 2. **Generative Vision-Language Models:** Employs state-of-the-art multimodal LLMs for direct zero-shot inference (e.g., Gemma-3-27B, MedGemma-27B). While highly capable without additional training, their performance depends heavily on model scale and application domain, limiting their use in resource-constrained settings.
 
@@ -86,7 +86,7 @@ This repository focuses on **three primary datasets** for comprehensive multimod
 
 ### 3. mBRSET Dataset
 
-[mBRSET](https://www.nature.com/articles/s41597-025-04627-3): A mobile-friendly version of the Brazilian Ophthalmological dataset, capturing 5,164+ retinal fundus images from handheld cameras in LMIC screening campaigns, paired with clinical metadata (age, sex, systemic conditions, treatment history). This medical use case exemplifies deployment constraints and demonstrates how domain-specific embedding backbones (MedSigLIP) and late fusion architectures achieve clinical-grade diagnostics on edge devices without massive server infrastructure.
+[mBRSET](https://www.nature.com/articles/s41597-025-04627-3): A mobile-friendly version of the Brazilian Ophthalmological dataset, capturing 5,164+ retinal fundus images from handheld cameras in LMIC screening campaigns, paired with clinical metadata (age, sex, systemic conditions, treatment history). This medical use case evaluates domain-specific embedding backbones and multimodal fusion strategies under measured inference-resource constraints.
 
 ## Usage
 
@@ -138,7 +138,7 @@ python scripts/generate_embeddings_all.py --config configs/paper_experiments.yam
 
 ### 4. Train Fusion Models
 
-Evaluate embedding fusion architectures (Linear Probe, Early Fusion, Late Fusion) and compare against zero-shot generative models:
+Evaluate modality-specific and embedding fusion architectures, then compare them with zero-shot generative models:
 
 ```bash
 # Train and evaluate embedding fusion pipelines
@@ -163,6 +163,34 @@ sbatch jobs/job_plot_results.sh
 ```
 
 Results are saved to `outputs/framework_fusion/` and `outputs/gemma_zero_shot/`.
+
+### 6. Run the fusion benchmark
+
+```bash
+# Run the fusion experiments as a bounded Slurm array.
+sbatch jobs/job_fusion_experiments_array.sh
+
+# Compute bootstrap confidence intervals, pairwise comparisons, and inference metrics.
+sbatch jobs/job_bootstrap_and_efficiency.sh
+
+# Generate CSV/LaTeX tables and performance--efficiency figures.
+sbatch jobs/job_generate_fusion_report.sh
+```
+
+### 7. Profile direct MLLM efficiency
+
+The direct MLLM profiler measures end-to-end latency and peak GPU memory for
+the configured Gemma and MedGemma cases. It deliberately does not report a
+single FLOPs value because prompt tokenization and generated length vary by
+example.
+
+```bash
+# Run the configured direct-inference profiling cases (one at a time by default).
+sbatch jobs/job_mllm_efficiency_array.sh
+
+# Aggregate direct-model performance and efficiency outputs.
+sbatch jobs/job_generate_mllm_efficiency_report.sh
+```
 
 ## Directory Structure
 
@@ -192,6 +220,11 @@ scripts/                       # Main experiment pipelines
 ├── extract_data_samples.py    # Build small sample subsets
 ├── generate_embeddings_all.py # Extract embeddings across datasets/models
 ├── train_fusion_framework.py  # Train embedding fusion classifiers
+├── fusion_models.py           # Frozen-embedding fusion heads and training loop
+├── bootstrap_fusion_metrics.py    # Confidence intervals and paired bootstrap tests
+├── generate_fusion_report.py  # Build final tables and Pareto figures from CSV outputs
+├── benchmark_mllm_efficiency.py # Profile direct MLLM latency and GPU memory
+├── generate_mllm_efficiency_report.py # Aggregate direct MLLM profiling outputs
 ├── eval_gemma_zero_shot.py    # Evaluate zero-shot generative models
 ├── correct_fakeddit_metrics.py # Utility for correcting Fakeddit result parsing
 └── plot_framework_results.py  # Generate result summaries and tables
@@ -204,6 +237,11 @@ jobs/                          # SLURM job submission scripts
 ├── job_framework_fusion.sh    # Train fusion architectures
 ├── job_gemma_zero_shot.sh     # Run zero-shot Gemma inference
 ├── job_plot_results.sh        # Visualize and summarize results
+├── job_fusion_experiments_array.sh # Run the frozen-embedding benchmark array
+├── job_bootstrap_and_efficiency.sh # Bootstrap CIs and inference benchmark
+├── job_generate_fusion_report.sh # Create fusion tables and performance--efficiency figures
+├── job_mllm_efficiency_array.sh # Profile configured direct MLLM cases
+├── job_generate_mllm_efficiency_report.sh # Aggregate direct MLLM profiling
 └── ...
 
 data_samples/                  # Generated sample subsets for quick inspection/testing
@@ -212,7 +250,6 @@ outputs/                       # Result CSVs, plots, and SLURM logs
 ├── framework_fusion/          # Fusion model results
 └── gemma_zero_shot/           # Generative model results
 
-main.tex, appendix.tex         # Paper manuscript sources
 requirements.txt               # Python dependency list
 ```
 
@@ -222,8 +259,7 @@ requirements.txt               # Python dependency list
 - **Parameter Scaling:** Model scale remains a practical limitation for routine deployment. Reducing Gemma from 27B to 4B parameters causes significant accuracy drops on canonical tasks and near-random performance on adversarial (Fakeddit) data.
 - **Domain Adaptation:** Medical-specific backbones (MedSigLIP) on mBRSET achieve superior performance compared to general-domain embeddings. This highlights the modularity of embedding fusion: practitioners can swap backbones to fit domain constraints.
 - **Architectural Insights:**
-  - **Early Fusion:** Performed best in Fakeddit, where the model needs to learn image-text interactions directly, including cases where captions and images may conflict.
-  - **Late Fusion:** Performed best in Recipes5k and mBRSET, where modalities provide complementary information, preserving modality-specific signals before final integration.
+  - **Early and Late MLP Fusion:** Strong embedding-fusion results depend on the dataset and backbone, motivating comparison with gated, MCR, and mixture-of-experts alternatives under a shared training budget.
 
 
 ## License

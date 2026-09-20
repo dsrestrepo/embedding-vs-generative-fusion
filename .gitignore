@@ -66,6 +66,7 @@ env/
 outputs/
 Notebooks/
 sup/
+paper/
 
 **/Alignment_early_linear_5runs_batch512/
 **/Alignment_early_linear_5runs_batch512_neg_pos/
