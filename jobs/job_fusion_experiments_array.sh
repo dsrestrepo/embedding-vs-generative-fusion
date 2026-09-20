@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=dfdm_rebuttal
 #SBATCH --output=outputs/rebuttal_fusion/logs/%A_%a.out
-#SBATCH --array=0-41%6
+#SBATCH --array=0-47%6
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --partition=gpua100
@@ -16,9 +16,9 @@ source activate base_ml
 datasets=(Recipes5k Recipes5k fakeddit fakeddit mbrset mbrset)
 backbones=(clip siglip clip siglip biomedclip medsiglip)
 labels=(class class 2_way_label 2_way_label DR_2 DR_2)
-methods=(image_only text_only linear mlp_early mlp_late gated_attention mcr_late)
+methods=(image_only text_only linear mlp_early mlp_late gated_attention mcr_late i2moe)
 
-pair=$((SLURM_ARRAY_TASK_ID / 7)); method_index=$((SLURM_ARRAY_TASK_ID % 7))
+pair=$((SLURM_ARRAY_TASK_ID / 8)); method_index=$((SLURM_ARRAY_TASK_ID % 8))
 dataset=${datasets[$pair]}; backbone=${backbones[$pair]}; label=${labels[$pair]}; method=${methods[$method_index]}
 case "$dataset" in Recipes5k) subdir=Recipes5k ;; fakeddit) subdir=fakeddit ;; mbrset) subdir=mbrset ;; esac
 mkdir -p outputs/rebuttal_fusion/logs
