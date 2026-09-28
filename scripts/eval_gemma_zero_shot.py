@@ -123,8 +123,11 @@ def run_evaluation(args):
 
     print(f"Possible labels: {possible_labels}")
 
-    # Initialize model in online mode so it can download weights
-    model = GemmaVLM(args.model_name, quantization=args.quantization, offline_mode=False)
+    model = GemmaVLM(
+        args.model_name,
+        quantization=args.quantization,
+        offline_mode=args.offline_mode,
+    )
 
     predictions = []
     
@@ -302,6 +305,7 @@ def run_configured_evaluations(config_path: str, case_index=None):
             multilabel=dataset.get("multilabel", False),
             batch_size=zero_shot_cfg.get("batch_size", 4),
             quantization=zero_shot_cfg.get("quantization", "8b"),
+            offline_mode=zero_shot_cfg.get("offline_mode", False),
             output_dir=output_dir,
         )
         print(f"--- Running Zero-Shot on {args.dataset} ({args.model_name}) ---")
@@ -321,6 +325,7 @@ def main():
     parser.add_argument("--multilabel", action="store_true", help="Set flag if classification is multilabel")
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size for model evaluation")
     parser.add_argument("--quantization", type=str, default="8b", help="Quantization format to use (16b, 8b, 4b)")
+    parser.add_argument("--offline_mode", action="store_true", help="Load model files only from the local Hugging Face cache")
     parser.add_argument("--output_dir", type=str, default="outputs/gemma_zero_shot", help="Output folder")
     args = parser.parse_args()
 

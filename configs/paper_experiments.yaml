@@ -146,6 +146,7 @@ framework_fusion:
 # Zero-shot Gemma evaluation configuration
 gemma_zero_shot:
   output_dir: outputs/gemma_zero_shot
+  offline_mode: true
   datasets:
     - name: Recipes5k
       enabled: true
