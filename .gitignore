@@ -62,8 +62,17 @@ env/
 # Ignore LaTeX sources
 *.tex
 
-# Ignore large generated outputs and notebooks (these are typically heavy)
-outputs/
+# Ignore large generated outputs and notebooks (these are typically heavy),
+# while retaining the compact result tables used by the paper appendix.
+outputs/*
+!outputs/rebuttal_fusion/
+outputs/rebuttal_fusion/*
+!outputs/rebuttal_fusion/bootstrap_summary.csv
+!outputs/rebuttal_fusion/bootstrap_pairwise.csv
+!outputs/rebuttal_fusion/efficiency.csv
+!outputs/mllm_efficiency/
+outputs/mllm_efficiency/*
+!outputs/mllm_efficiency/mllm_performance_efficiency.csv
 Notebooks/
 sup/
 paper/
