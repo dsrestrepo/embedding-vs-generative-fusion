@@ -232,11 +232,15 @@ def run_evaluation(args):
     print(f"Accuracy: {acc:.4f}")
     print(f"F1 Score (Macro): {f1:.4f}")
 
-    # Output raw predictions to file
+    # Save predictions with the concrete model identifier so multiple models
+    # evaluated on the same dataset never overwrite one another.
     test_df['gemma_prediction'] = predictions
+    if len(args.label_col) == 1 and not args.multilabel:
+        test_df['gemma_parsed_prediction'] = parsed_preds
     output_dir = args.output_dir
     os.makedirs(output_dir, exist_ok=True)
-    output_file_preds = f"{output_dir}/{args.dataset}_zero_shot_preds.csv"
+    model_slug = args.model_name.rstrip('/').split('/')[-1]
+    output_file_preds = f"{output_dir}/{args.dataset}_{model_slug}_predictions.csv"
     test_df.to_csv(output_file_preds, index=False)
     
     # Save framework-compatible metrics file
@@ -256,7 +260,7 @@ def run_evaluation(args):
     print(f"Metrics saved to {output_file_metrics}")
 
 
-def run_configured_evaluations(config_path: str):
+def run_configured_evaluations(config_path: str, case_index=None):
     config = load_config(config_path)
     paths = config.get("paths", {})
     embeddings_dir = paths.get("embeddings_dir", "Embeddings_vlm")
@@ -268,6 +272,14 @@ def run_configured_evaluations(config_path: str):
     if not datasets:
         print("No enabled datasets found in gemma_zero_shot config.")
         return
+
+    if case_index is not None:
+        if case_index < 0 or case_index >= len(datasets):
+            raise IndexError(
+                f"case_index {case_index} is outside the enabled case range "
+                f"0--{len(datasets) - 1}"
+            )
+        datasets = [datasets[case_index]]
 
     for dataset in datasets:
         backbone = dataset.get("backbone", "clip")
@@ -299,6 +311,7 @@ def run_configured_evaluations(config_path: str):
 def main():
     parser = argparse.ArgumentParser(description="Zero-shot evaluation with Gemma models.")
     parser.add_argument("--config", type=str, help="Run enabled gemma_zero_shot entries from a YAML config")
+    parser.add_argument("--case_index", type=int, help="Run one zero-based enabled config case")
     parser.add_argument("--model_name", type=str, default="google/gemma-3-27b-it", help="Model name or path")
     parser.add_argument("--embeddings_csv", type=str, help="Path to pre-extracted embeddings (contains paths and labels)")
     parser.add_argument("--label_col", type=str, nargs='+', help="Column name(s) with ground truth label")
@@ -312,7 +325,7 @@ def main():
     args = parser.parse_args()
 
     if args.config:
-        run_configured_evaluations(args.config)
+        run_configured_evaluations(args.config, args.case_index)
     else:
         run_evaluation(args)
 

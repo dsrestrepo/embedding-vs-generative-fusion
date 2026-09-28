@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=gemma_zero_shot
-#SBATCH --output=outputs/gemma_zero_shot.out
+#SBATCH --output=outputs/gemma_zero_shot_%A_%a.out
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --partition=gpua100
@@ -17,6 +17,11 @@ source activate base_ml
 
 echo "Starting configured Gemma Zero-Shot Evaluation..."
 
-python scripts/eval_gemma_zero_shot.py --config configs/paper_experiments.yaml
+args=(--config configs/paper_experiments.yaml)
+if [[ -n "${SLURM_ARRAY_TASK_ID:-}" ]]; then
+    args+=(--case_index "$SLURM_ARRAY_TASK_ID")
+fi
+
+python scripts/eval_gemma_zero_shot.py "${args[@]}"
 
 echo "Gemma Zero-Shot evaluation completed."
