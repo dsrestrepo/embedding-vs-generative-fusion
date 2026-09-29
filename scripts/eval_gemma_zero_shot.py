@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import json
+import re
 import pandas as pd
 from pathlib import Path
 from typing import Any, Dict, List
@@ -55,6 +56,35 @@ def resolve_cached_snapshot(model_id: str) -> str:
         f"No complete local snapshot found for {model_id}. Checked:\n  "
         + "\n  ".join(failures)
     )
+
+
+def parse_single_label_prediction(prediction, dataset, possible_labels):
+    """Parse a generated answer using the same label semantics as the prompt."""
+    text = str(prediction).strip().lower()
+    numeric = re.match(r"^\s*([+-]?\d+(?:\.\d+)?)\b", text)
+    if numeric:
+        token = numeric.group(1)
+        for label in possible_labels:
+            if token == str(label).lower():
+                return str(label)
+
+    dataset = dataset.lower()
+    if dataset == "fakeddit":
+        if re.search(r"\bfake\b", text):
+            return "0"
+        if re.search(r"\breal\b", text):
+            return "1"
+    elif dataset in ("mbrset", "brset"):
+        if re.search(r"\b(no diabetic retinopathy|no dr|negative)\b", text):
+            return "0"
+        if re.search(r"\b(diabetic retinopathy|dr|positive)\b", text):
+            return "1"
+
+    # General categorical tasks: prefer whole-label matches over substrings.
+    for label in possible_labels:
+        if re.search(rf"(?<!\w){re.escape(str(label).lower())}(?!\w)", text):
+            return str(label)
+    raise ValueError(f"Could not parse prediction for {dataset}: {prediction!r}")
 
 
 def run_evaluation(args):
@@ -245,16 +275,10 @@ def run_evaluation(args):
     else:
         # Single-label classification
         possible_labels_str = [str(l) for l in possible_labels]
-        possible_labels_lower = [l.lower() for l in possible_labels_str]
         for p in predictions:
-            p_lower = str(p).lower()
-            # Find first matching label
-            matched = possible_labels_str[0] # Default fallback
-            for i, lbl in enumerate(possible_labels_lower):
-                if lbl in p_lower:
-                    matched = possible_labels_str[i]
-                    break
-            parsed_preds.append(matched)
+            parsed_preds.append(
+                parse_single_label_prediction(p, args.dataset, possible_labels_str)
+            )
             
         # Ensure y_true and y_pred are exactly the same type (strings) to prevent sklearn ValueError
         y_true = np.array([str(x) for x in ground_truths])
