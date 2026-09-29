@@ -73,6 +73,9 @@ outputs/rebuttal_fusion/*
 !outputs/mllm_efficiency/
 outputs/mllm_efficiency/*
 !outputs/mllm_efficiency/mllm_performance_efficiency.csv
+!outputs/gemma_zero_shot/
+outputs/gemma_zero_shot/*
+!outputs/gemma_zero_shot/mllm_bootstrap_summary.csv
 Notebooks/
 sup/
 paper/

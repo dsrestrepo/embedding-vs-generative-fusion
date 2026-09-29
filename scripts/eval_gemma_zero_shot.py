@@ -1,7 +1,9 @@
 import os
 import sys
 import argparse
+import json
 import pandas as pd
+from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
@@ -26,6 +28,33 @@ def load_config(path: str) -> Dict[str, Any]:
 
 def enabled_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return [item for item in items if item.get("enabled", False)]
+
+
+def resolve_cached_snapshot(model_id: str) -> str:
+    """Resolve a complete checkpoint in either supported HF cache layout."""
+    cache_home = Path(os.environ.get("HF_HOME", "~/.cache/huggingface")).expanduser()
+    repository = "models--" + model_id.replace("/", "--")
+    failures = []
+    for repo in (cache_home / repository, cache_home / "hub" / repository):
+        ref = repo / "refs" / "main"
+        if not ref.is_file():
+            failures.append(f"{repo}: no refs/main")
+            continue
+        snapshot = repo / "snapshots" / ref.read_text().strip()
+        index = snapshot / "model.safetensors.index.json"
+        if not index.is_file():
+            failures.append(f"{snapshot}: no safetensors index")
+            continue
+        weight_files = set(json.loads(index.read_text())["weight_map"].values())
+        missing = sorted(name for name in weight_files if not (snapshot / name).is_file())
+        if missing:
+            failures.append(f"{snapshot}: missing {', '.join(missing[:3])}")
+            continue
+        return str(snapshot)
+    raise FileNotFoundError(
+        f"No complete local snapshot found for {model_id}. Checked:\n  "
+        + "\n  ".join(failures)
+    )
 
 
 def run_evaluation(args):
@@ -123,8 +152,11 @@ def run_evaluation(args):
 
     print(f"Possible labels: {possible_labels}")
 
+    model_source = resolve_cached_snapshot(args.model_name) if args.offline_mode else args.model_name
+    if model_source != args.model_name:
+        print(f"Loading complete local snapshot: {model_source}")
     model = GemmaVLM(
-        args.model_name,
+        model_source,
         quantization=args.quantization,
         offline_mode=args.offline_mode,
     )

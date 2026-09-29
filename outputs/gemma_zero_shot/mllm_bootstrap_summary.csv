@@ -1,0 +1,17 @@
+dataset,model,metric,estimate,ci_low,ci_high,bootstrap_samples,n_test,prediction_file
+Recipes5k,gemma-3-27b-it,accuracy,0.8952745849297573,0.8735632183908046,0.9157088122605364,2000,783,Recipes5k_gemma-3-27b-it_predictions.csv
+Recipes5k,gemma-3-27b-it,macro_f1,0.8879222860876909,0.856155774858127,0.902855424660463,2000,783,Recipes5k_gemma-3-27b-it_predictions.csv
+Recipes5k,gemma-3-4b-it,accuracy,0.7637292464878672,0.7330779054916986,0.7956577266922095,2000,783,Recipes5k_gemma-3-4b-it_predictions.csv
+Recipes5k,gemma-3-4b-it,macro_f1,0.7497721523449239,0.7055507131548812,0.7689907930538431,2000,783,Recipes5k_gemma-3-4b-it_predictions.csv
+fakeddit,gemma-3-27b-it,accuracy,0.3434688964905613,0.3329532497149373,0.35411123780565057,2000,7893,fakeddit_gemma-3-27b-it_predictions.csv
+fakeddit,gemma-3-27b-it,macro_f1,0.3418037509027734,0.33129398100956525,0.3524570684236229,2000,7893,fakeddit_gemma-3-27b-it_predictions.csv
+fakeddit,gemma-3-4b-it,accuracy,0.4640820980615735,0.45267642214620546,0.4748511339161282,2000,7893,fakeddit_gemma-3-4b-it_predictions.csv
+fakeddit,gemma-3-4b-it,macro_f1,0.46258206767069787,0.4513819533091411,0.47319207759476634,2000,7893,fakeddit_gemma-3-4b-it_predictions.csv
+mbrset,gemma-3-27b-it,accuracy,0.4927395934172314,0.4617618586640852,0.5217812197483059,2000,1033,mbrset_gemma-3-27b-it_predictions.csv
+mbrset,gemma-3-27b-it,macro_f1,0.4828288618818314,0.4515296778478219,0.5115571383765212,2000,1033,mbrset_gemma-3-27b-it_predictions.csv
+mbrset,gemma-3-4b-it,accuracy,0.2323439099283521,0.20672978505629477,0.2579324462640737,2000,977,mbrset_gemma-3-4b-it_predictions.csv
+mbrset,gemma-3-4b-it,macro_f1,0.18853820598006646,0.1713140506400204,0.2050447518307567,2000,977,mbrset_gemma-3-4b-it_predictions.csv
+mbrset,medgemma-27b-it,accuracy,0.9235237173281704,0.9070667957405615,0.9390125847047435,2000,1033,mbrset_medgemma-27b-it_predictions.csv
+mbrset,medgemma-27b-it,macro_f1,0.8821636139167852,0.8564565150547554,0.9056976253237936,2000,1033,mbrset_medgemma-27b-it_predictions.csv
+mbrset,medgemma-4b-it,accuracy,0.9060987415295256,0.888673765730881,0.9235237173281704,2000,1033,mbrset_medgemma-4b-it_predictions.csv
+mbrset,medgemma-4b-it,macro_f1,0.836490087514462,0.8051802806044607,0.8655834916568808,2000,1033,mbrset_medgemma-4b-it_predictions.csv
