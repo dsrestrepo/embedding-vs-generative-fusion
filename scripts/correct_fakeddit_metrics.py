@@ -13,8 +13,8 @@ def main():
 
     def parse_prediction(p):
         p = str(p).lower()
-        # In the prompt, Gemma was told: "0 (Real) or 1 (Fake)"
-        # In Fakeddit ground truth: 1 = Real, 0 = Fake.
+        # Legacy predictions used the inverted prompt "0 (Real), 1 (Fake)".
+        # Convert those semantic answers to the dataset mapping: 0 = Fake, 1 = Real.
         if '0' in p or 'real' in p:
             return 1
         elif '1' in p or 'fake' in p:

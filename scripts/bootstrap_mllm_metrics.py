@@ -112,9 +112,9 @@ def bootstrap_metrics(y_true, y_pred, samples, seed):
 
 def write_latex(summary, path):
     order = {"Recipes5k": 0, "fakeddit": 1, "mbrset": 2}
-    wide = summary.pivot(index=["dataset", "model", "n_test"], columns="metric")
+    wide = summary.pivot(index=["dataset", "model"], columns="metric")
     rows = []
-    for (dataset, model, n_test), values in wide.iterrows():
+    for (dataset, model), values in wide.iterrows():
         accuracy = values["estimate"]["accuracy"]
         accuracy_low = values["ci_low"]["accuracy"]
         accuracy_high = values["ci_high"]["accuracy"]
@@ -125,16 +125,16 @@ def write_latex(summary, path):
             (
                 order[dataset],
                 model,
-                f"{dataset} & {MODEL_LABELS.get(model, model)} & {n_test:,} & "
+                f"{dataset} & {MODEL_LABELS.get(model, model)} & "
                 f"{accuracy:.3f} [{accuracy_low:.3f}, {accuracy_high:.3f}] & "
                 f"{macro_f1:.3f} [{macro_f1_low:.3f}, {macro_f1_high:.3f}] \\\\",
             )
         )
     rows.sort(key=lambda row: (row[0], row[1]))
     with open(path, "w", encoding="utf-8") as output:
-        output.write("\\begin{tabular}{llrcc}\n")
+        output.write("\\begin{tabular}{llcc}\n")
         output.write("\\toprule\n")
-        output.write("Dataset & Model & $n$ & Accuracy [95\\% CI] & Macro-F1 [95\\% CI] \\\\\n")
+        output.write("Dataset & Model & Accuracy [95\\% CI] & Macro-F1 [95\\% CI] \\\\\n")
         output.write("\\midrule\n")
         output.write("\n".join(row[2] for row in rows))
         output.write("\n\\bottomrule\n\\end{tabular}\n")

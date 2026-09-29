@@ -146,7 +146,9 @@ framework_fusion:
 # Zero-shot Gemma evaluation configuration
 gemma_zero_shot:
   output_dir: outputs/gemma_zero_shot
-  offline_mode: true
+  # Portable default: reuse a complete cache when available, otherwise allow
+  # Transformers to download the model. Cluster jobs pass --offline_mode.
+  offline_mode: false
   datasets:
     - name: Recipes5k
       enabled: true

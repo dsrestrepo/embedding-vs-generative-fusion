@@ -25,7 +25,7 @@ from src.models import GemmaVLM
 def build_prompt(dataset, labels, text):
     prompt = "Task: Answer the following question based on the image.\n"
     if dataset.lower() == "fakeddit":
-        prompt += "This is a single-label task. Choose exactly one of the following classes: 0 (Real) or 1 (Fake).\n"
+        prompt += "This is a single-label task. Choose exactly one of the following classes: 0 (Fake) or 1 (Real).\n"
     elif dataset.lower() in ("mbrset", "brset"):
         prompt += "This is a single-label task. Choose exactly one of the following classes: 0 (No Diabetic Retinopathy) or 1 (Diabetic Retinopathy).\n"
     else:

@@ -179,7 +179,7 @@ def run_evaluation(args):
             prompt += f"This is a multilabel task. Possible classes are: {possible_labels}. Select all that apply.\n"
         else:
             if args.dataset.lower() == 'fakeddit':
-                prompt += "This is a single-label task. Choose exactly one of the following classes: 0 (Real) or 1 (Fake).\n"
+                prompt += "This is a single-label task. Choose exactly one of the following classes: 0 (Fake) or 1 (Real).\n"
             elif args.dataset.lower() in ['mbrset', 'brset']:
                 prompt += "This is a single-label task. Choose exactly one of the following classes: 0 (No Diabetic Retinopathy) or 1 (Diabetic Retinopathy).\n"
             else:
@@ -295,7 +295,7 @@ def run_evaluation(args):
     print(f"Metrics saved to {output_file_metrics}")
 
 
-def run_configured_evaluations(config_path: str, case_index=None):
+def run_configured_evaluations(config_path: str, case_index=None, offline_mode=False):
     config = load_config(config_path)
     paths = config.get("paths", {})
     embeddings_dir = paths.get("embeddings_dir", "Embeddings_vlm")
@@ -337,7 +337,7 @@ def run_configured_evaluations(config_path: str, case_index=None):
             multilabel=dataset.get("multilabel", False),
             batch_size=zero_shot_cfg.get("batch_size", 4),
             quantization=zero_shot_cfg.get("quantization", "8b"),
-            offline_mode=zero_shot_cfg.get("offline_mode", False),
+            offline_mode=offline_mode or zero_shot_cfg.get("offline_mode", False),
             output_dir=output_dir,
         )
         print(f"--- Running Zero-Shot on {args.dataset} ({args.model_name}) ---")
@@ -362,7 +362,7 @@ def main():
     args = parser.parse_args()
 
     if args.config:
-        run_configured_evaluations(args.config, args.case_index)
+        run_configured_evaluations(args.config, args.case_index, args.offline_mode)
     else:
         run_evaluation(args)
 

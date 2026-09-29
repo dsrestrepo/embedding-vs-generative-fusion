@@ -40,8 +40,8 @@ Before running the code, ensure you have the following installed:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/dsrestrepo/Embedding-Alignment.git
-cd Embedding-Alignment
+git clone https://github.com/dsrestrepo/embedding-vs-generative-fusion.git
+cd embedding-vs-generative-fusion
 ```
 
 2. Create a virtual environment (optional but recommended):
@@ -68,9 +68,11 @@ OPENAI_API_KEY=your_api_key_here
 ```
 Make sure you have a valid OpenAI API key to access the language model.
 
-For local Hugging Face models such as Gemma or MedGemma, make sure the model
-weights are available locally or that your Hugging Face credentials are
-configured in the environment where the jobs run.
+Gemma and MedGemma checkpoints are downloaded automatically when they are not
+already cached. These gated models require accepting the model license and
+authenticating with Hugging Face first. Use `--offline_mode` when running on a
+compute node without network access; the supplied Ruche job does this
+explicitly and therefore expects a complete local cache.
 
 ## Data
 
@@ -78,7 +80,7 @@ This repository focuses on **three primary datasets** for comprehensive multimod
 
 ### 1. Recipes5k Dataset
 
-[Recipes5k](http://www.ub.edu/cvub/recipes5k/): A multi-label ingredient prediction task from images and recipe metadata. Contains 4,826 recipes with 101 food types, addressing both intra- and inter-class variability. This use case demonstrates efficient embedding fusion for high-throughput, structured classification where abundant labeled training data is available.
+[Recipes5k](http://www.ub.edu/cvub/recipes5k/): Used here as a 100-class food-category classification task from food images and ingredient lists. The original dataset contains approximately 5,000 image--recipe pairs spanning 101 food types; the evaluation retains the 100 classes represented after preprocessing.
 
 ### 2. Fakeddit Dataset
 

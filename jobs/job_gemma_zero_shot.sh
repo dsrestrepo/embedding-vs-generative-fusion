@@ -25,7 +25,7 @@ export TRANSFORMERS_OFFLINE=1
 
 echo "Starting configured Gemma Zero-Shot Evaluation..."
 
-args=(--config configs/paper_experiments.yaml)
+args=(--config configs/paper_experiments.yaml --offline_mode)
 if [[ -n "${SLURM_ARRAY_TASK_ID:-}" ]]; then
     args+=(--case_index "$SLURM_ARRAY_TASK_ID")
 fi
